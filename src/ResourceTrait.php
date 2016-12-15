@@ -5,10 +5,7 @@
 
 namespace tuyakhov\jsonapi;
 
-use yii\base\Arrayable;
 use yii\db\ActiveRecordInterface;
-use yii\db\BaseActiveRecord;
-use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
 
 trait ResourceTrait
