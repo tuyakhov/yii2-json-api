@@ -16,7 +16,7 @@ class ResourceModel extends Model implements ResourceInterface, LinksInterface
 {
     use ResourceTrait;
 
-    public static $id = '123';
+    public static $id = 123;
     public static $fields = ['field1', 'field2'];
     public static $extraFields = [];
     public $field1 = 'test';
