@@ -6,6 +6,7 @@
 namespace tuyakhov\jsonapi;
 
 use yii\base\Component;
+use yii\base\InvalidValueException;
 use yii\base\Model;
 use yii\data\DataProviderInterface;
 use yii\data\Pagination;
@@ -86,14 +87,14 @@ class Serializer extends Component
      * @param ResourceInterface $model
      * @return array
      */
-    protected function serializeModel($model)
+    protected function serializeModel(ResourceInterface $model)
     {
         $fields = $this->getRequestedFields();
 
         $attributes = isset($fields[$model->getType()]) ? $fields[$model->getType()] : [];
         $data = [
-            'id' => $model->getId(),
-            'type' => $model->getType(),
+            'id' => (string) $model->getId(),
+            'type' => (string) $model->getType(),
             'attributes' => $model->getResourceAttributes($attributes),
         ];
 
@@ -104,11 +105,11 @@ class Serializer extends Component
                 if (is_array($items)) {
                     foreach ($items as $item) {
                         if ($item instanceof ResourceIdentifierInterface) {
-                            $relationship[] = ['id' => $item->getId(), 'type' => $item->getType()];
+                            $relationship[] = ['id' => (string) $item->getId(), 'type' => (string) $item->getType()];
                         }
                     }
                 } elseif ($items instanceof ResourceIdentifierInterface) {
-                    $relationship = ['id' => $items->getId(), 'type' => $items->getType()];
+                    $relationship = ['id' => (string) $items->getId(), 'type' => (string) $items->getType()];
                 }
 
                 if (!empty($relationship)) {
