@@ -104,11 +104,11 @@ class Serializer extends Component
                 $relationship = [];
                 if (is_array($items)) {
                     foreach ($items as $item) {
-                        if ($item instanceof ResourceIdentifierInterface) {                            
+                        if ($item instanceof ResourceIdentifierInterface) {
                             $relationship[] = ['id' => (string) $item->getId(), 'type' => (string) $item->getType()];
                         }
                     }
-                } elseif ($items instanceof ResourceIdentifierInterface) {                    
+                } elseif ($items instanceof ResourceIdentifierInterface) {
                     $relationship = ['id' =>  (string) $items->getId(), 'type' => (string) $items->getType()];
                 }
 
