@@ -6,6 +6,7 @@
 namespace tuyakhov\jsonapi;
 
 use yii\base\Component;
+use yii\base\InvalidValueException;
 use yii\base\Model;
 use yii\data\DataProviderInterface;
 use yii\data\Pagination;
@@ -86,8 +87,10 @@ class Serializer extends Component
      * @param ResourceInterface $model
      * @return array
      */
-    protected function serializeModel($model)
+    protected function serializeModel(ResourceInterface $model)
     {
+        $this->checkIdentification($model);
+
         $fields = $this->getRequestedFields();
 
         $attributes = isset($fields[$model->getType()]) ? $fields[$model->getType()] : [];
@@ -104,10 +107,12 @@ class Serializer extends Component
                 if (is_array($items)) {
                     foreach ($items as $item) {
                         if ($item instanceof ResourceIdentifierInterface) {
+                            $this->checkIdentification($item);
                             $relationship[] = ['id' => $item->getId(), 'type' => $item->getType()];
                         }
                     }
                 } elseif ($items instanceof ResourceIdentifierInterface) {
+                    $this->checkIdentification($items);
                     $relationship = ['id' => $items->getId(), 'type' => $items->getType()];
                 }
 
@@ -271,5 +276,25 @@ class Serializer extends Component
     {
         $include = $this->request->get($this->expandParam);
         return is_string($include) ? preg_split('/\s*,\s*/', $include, -1, PREG_SPLIT_NO_EMPTY) : [];
+    }
+
+    /**
+     * Checks Identification of resource object.
+     * http://jsonapi.org/format/#document-resource-object-identification
+     * @param ResourceInterface $resource
+     */
+    protected function checkIdentification(ResourceInterface $resource)
+    {
+        if (!is_string($resource->getId())) {
+            throw new InvalidValueException(
+                'The values id of resource object ' . get_class ($resource) . ' MUST be a string.'
+            );
+        }
+
+        if (!is_string($resource->getType())) {
+            throw new InvalidValueException(
+                'The values type of resource object ' . get_class ($resource) . ' MUST be a string.'
+            );
+        }
     }
 }
