@@ -109,7 +109,7 @@ class Serializer extends Component
                         }
                     }
                 } elseif ($items instanceof ResourceIdentifierInterface) {
-                    $relationship = ['id' =>  (string) $items->getId(), 'type' => (string) $items->getType()];
+                    $relationship = ['id' => (string) $items->getId(), 'type' => (string) $items->getType()];
                 }
 
                 if (!empty($relationship)) {
