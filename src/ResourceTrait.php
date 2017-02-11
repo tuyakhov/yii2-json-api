@@ -28,7 +28,7 @@ trait ResourceTrait
     {
         $reflect = new \ReflectionClass($this);
         $className = $reflect->getShortName();
-        return Inflector::pluralize(Inflector::camel2id($className));
+        return Inflector::camel2id($className);
     }
 
     /**
