@@ -14,6 +14,7 @@ use yii\web\Link;
 use yii\web\Linkable;
 use yii\web\Request;
 use yii\web\Response;
+use yii\helpers\Inflector;
 
 class Serializer extends Component
 {
