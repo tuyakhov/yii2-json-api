@@ -5,7 +5,6 @@
 
 namespace tuyakhov\jsonapi;
 
-use yii\base\Arrayable;
 use yii\db\ActiveRecordInterface;
 use yii\helpers\Inflector;
 use yii\web\Link;
