@@ -15,7 +15,7 @@ class JsonApiParser extends JsonParser
     /**
      * @var array|callable|null
      */
-    protected $formNameCallback;
+    public $formNameCallback;
 
     public function __construct($formNameCallback = null)
     {

@@ -30,7 +30,7 @@ Controller:
 class Controller extends \yii\rest\Controller
 {
     public $serializer = 'tuyakhov\jsonapi\Serializer';
-    
+
     public function behaviors()
     {
         return ArrayHelper::merge(parent::behaviors(), [
@@ -44,9 +44,9 @@ class Controller extends \yii\rest\Controller
     }
 }
 ```
-By default, the value of `type` is automatically pluralized. 
+By default, the value of `type` is automatically pluralized.
 You can change this behavior by setting `tuyakhov\jsonapi\Serializer::$pluralize` property:
-```
+```php
 class Controller extends \yii\rest\Controller
 {
     public $serializer = [
@@ -56,7 +56,7 @@ class Controller extends \yii\rest\Controller
 }
 ```
 Defining models:
-1) Let's define `User` model and declare an `articles` relation 
+1) Let's define `User` model and declare an `articles` relation
 ```php
 use tuyakhov\jsonapi\ResourceTrait;
 use tuyakhov\jsonapi\ResourceInterface;
@@ -64,7 +64,7 @@ use tuyakhov\jsonapi\ResourceInterface;
 class User extends ActiveRecord implements ResourceInterface
 {
     use ResourceTrait;
-    
+
     public function getArticles()
     {
         return $this->hasMany(Article::className(), ['author_id' => 'id']);
@@ -126,16 +126,16 @@ Links
 Your resource classes may support HATEOAS by implementing the `LinksInterface`.
 The interface contains `getLinks()` method which should return a list of links.
 Typically, you should return at least the `self` link representing the URL to the resource object itself.
-In order to appear the links in relationships `getLinks()` method should return `self` link. 
-Based on this link each relationship will generate `self` and `related` links. 
-By default it happens by appending a relationship name at the end of the `self` link of the primary model, 
-you can simply change that behavior by overwriting `getRelationshipLinks()` method. 
+In order to appear the links in relationships `getLinks()` method should return `self` link.
+Based on this link each relationship will generate `self` and `related` links.
+By default it happens by appending a relationship name at the end of the `self` link of the primary model,
+you can simply change that behavior by overwriting `getRelationshipLinks()` method.
 For example,
 ```php
 class User extends ActiveRecord implements ResourceInterface, LinksInterface
 {
     use ResourceTrait;
-    
+
     public function getLinks()
     {
         return [
