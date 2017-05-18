@@ -168,7 +168,7 @@ class Serializer extends Component
 
             $included = $this->serializeIncluded($resource);
             if (!empty($included)) {
-                $data['included'] = $included;
+                $data['included'] = array_values($included);
             }
 
             return $data;
@@ -200,13 +200,13 @@ class Serializer extends Component
 
     /**
      * @param ResourceInterface $resource
+     * @param array $includedObjects All included objects from previous serialization, prevent duplicate includes
      * @return array
      */
-    protected function serializeIncluded($resource)
+    protected function serializeIncluded($resource, $includedObjects = [])
     {
         $included = $this->getIncluded();
         $relationships = $resource->getResourceRelationships();
-        $data = [];
         foreach ($relationships as $name => $relationship) {
             if (!in_array($name, $included)) {
                 continue;
@@ -216,11 +216,14 @@ class Serializer extends Component
             }
             foreach ($relationship as $model) {
                 if ($model instanceof ResourceInterface) {
-                    $data[] = $this->serializeModel($model);
+                    $deduplicateKey = $model->getType() . '|' . $model->getId();
+                    if (!isset($includedObjects[$deduplicateKey])) {
+                        $includedObjects[$deduplicateKey] = $this->serializeModel($model);
+                    }
                 }
             }
         }
-        return $data;
+        return $includedObjects;
     }
 
     /**
@@ -240,17 +243,14 @@ class Serializer extends Component
                 if ($model instanceof ResourceInterface) {
                     $models[] = $this->serializeModel($model);
 
-                    $included = $this->serializeIncluded($model);
-                    foreach ($included as $document) {
-                        $includedModels[] = $document;
-                    }
+                    $includedModels = $this->serializeIncluded($model, $includedModels);
                 }
             }
 
             $result = ['data' => $models];
 
             if (!empty($includedModels)) {
-                $result['included'] = $includedModels;
+                $result['included'] = array_values($includedModels);
             }
 
             if (($pagination = $dataProvider->getPagination()) !== false) {
