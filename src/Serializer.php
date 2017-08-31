@@ -295,8 +295,9 @@ class Serializer extends Component
         $this->response->setStatusCode(422, 'Data Validation Failed.');
         $result = [];
         foreach ($model->getFirstErrors() as $name => $message) {
+            $memberName = call_user_func($this->prepareMemberName, $name);
             $result[] = [
-                'source' => ['pointer' => "/data/attributes/{$name}"],
+                'source' => ['pointer' => "/data/attributes/{$memberName}"],
                 'detail' => $message,
             ];
         }
