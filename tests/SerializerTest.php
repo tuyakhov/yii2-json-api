@@ -35,6 +35,7 @@ class SerializerTest extends TestCase
         $model->addError('field1', 'Test error');
         $model->addError('field2', 'Multiple error 1');
         $model->addError('field2', 'Multiple error 2');
+        $model->addError('first_name', 'Member name check');
         $this->assertEquals([
             [
                 'source' => ['pointer' => "/data/attributes/field1"],
@@ -43,6 +44,10 @@ class SerializerTest extends TestCase
             [
                 'source' => ['pointer' => "/data/attributes/field2"],
                 'detail' => 'Multiple error 1',
+            ],
+            [
+                'source' => ['pointer' => "/data/attributes/first-name"],
+                'detail' => 'Member name check',
             ]
         ], $serializer->serialize($model));
     }
