@@ -30,7 +30,7 @@ class Inflector extends BaseInflector
      */
     public static function member2var($member)
     {
-        return str_replace(' ', '_', preg_replace('/[^A-Za-z0-9]+/', ' ', $member));
+        return str_replace(' ', '_', preg_replace('/[^A-Za-z0-9\.]+/', ' ', $member));
     }
 
     /**

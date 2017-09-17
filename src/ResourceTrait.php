@@ -51,19 +51,28 @@ trait ResourceTrait
     }
 
     /**
+     * @param null|array $linked
      * @return array
      */
-    public function getResourceRelationships()
+    public function getResourceRelationships(array $linked = null)
     {
-        $relationships = [];
         $fields = [];
         if ($this instanceof Arrayable) {
             $fields = $this->extraFields();
         }
+        $resolvedFields = $this->resolveFields($fields);
+        $keys = array_keys($resolvedFields);
+        if ($linked === null) {
+            $linked = $keys;
+        }
+        $relationships = array_fill_keys($keys, null);
+        $linkedFields = array_intersect($keys, $linked);
 
-        foreach ($this->resolveFields($fields) as $name => $definition) {
+        foreach ($linkedFields as $name) {
+            $definition = $resolvedFields[$name];
             $relationships[$name] = is_string($definition) ? $this->$definition : call_user_func($definition, $this, $name);
         }
+
         return $relationships;
     }
 
