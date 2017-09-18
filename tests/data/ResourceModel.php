@@ -26,10 +26,19 @@ class ResourceModel extends Model implements ResourceInterface, LinksInterface
     public $username = '';
     public $extraField1 = 'testExtra';
     public $extraField2 = 42;
+    private $_id;
 
     public function getId()
     {
-        return static::$id;
+        if ($this->_id === null) {
+            $this->_id = static::$id;
+        }
+        return $this->_id;
+    }
+
+    public function setId($value)
+    {
+        $this->_id = $value;
     }
 
     public function fields()

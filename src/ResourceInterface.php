@@ -19,9 +19,10 @@ interface ResourceInterface extends ResourceIdentifierInterface
 
     /**
      * The "relationships" member of the resource object describing relationships between the resource and other JSON API resources.
+     * @param null|array $linked specific resource linkage that a client has requested.
      * @return ResourceIdentifierInterface[] represent references from the resource object in which it’s defined to other resource objects.
      */
-    public function getResourceRelationships();
+    public function getResourceRelationships(array $linked = null);
 
     public function setResourceRelationship($name, $relationship);
 

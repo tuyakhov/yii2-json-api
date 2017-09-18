@@ -72,19 +72,36 @@ class SerializerTest extends TestCase
         ], $serializer->serialize($model));
 
         ResourceModel::$fields = ['first_name'];
-        ResourceModel::$extraFields = [];
-        $this->assertSame([
+        ResourceModel::$extraFields = ['extraField1'];
+        $model->extraField1 = new ResourceModel();
+        $relationship = [
+            'data' => ['id' => '123', 'type' => 'resource-models'],
+            'links' => [
+                'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field1'],
+                'related' => ['href' => 'http://example.com/resource/123/extra-field1'],
+            ]
+        ];
+        $expected = [
             'data' => [
                 'id' => '123',
                 'type' => 'resource-models',
                 'attributes' => [
                     'first-name' => 'Bob',
                 ],
+                'relationships' => [
+                    'extra-field1' => [
+                        'links' => $relationship['links']
+                    ]
+                ],
                 'links' => [
                     'self' => ['href' => 'http://example.com/resource/123']
                 ]
             ]
-        ], $serializer->serialize($model));
+        ];
+        $this->assertSame($expected, $serializer->serialize($model));
+        $_POST[$serializer->request->methodParam] = 'POST';
+        $expected['data']['relationships']['extra-field1'] = $relationship;
+        $this->assertSame($expected, $serializer->serialize($model));
     }
 
     public function testExpand()
@@ -97,16 +114,17 @@ class SerializerTest extends TestCase
                 'field1' => 'test',
                 'field2' => 2,
             ],
-        ];
-        $compoundModel['relationships'] = [
-            'extra-field1' => [
-                'data' => ['id' => '123', 'type' => 'resource-models'],
-                'links' => [
-                    'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field1'],
-                    'related' => ['href' => 'http://example.com/resource/123/extra-field1'],
+            'relationships' => [
+                'extra-field1' => [
+                    'data' => ['id' => '123', 'type' => 'resource-models'],
+                    'links' => [
+                        'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field1'],
+                        'related' => ['href' => 'http://example.com/resource/123/extra-field1'],
+                    ]
                 ]
             ]
         ];
+        unset($includedModel['relationships']['extra-field1']['data']);
         $compoundModel['links'] = $includedModel['links'] = [
             'self' => ['href' => 'http://example.com/resource/123']
         ];
@@ -145,6 +163,70 @@ class SerializerTest extends TestCase
         ], $serializer->serialize($model));
     }
 
+    public function testNestedRelationships()
+    {
+        ResourceModel::$fields = ['field1'];
+        ResourceModel::$extraFields = ['extraField1'];
+        $resource = new ResourceModel();
+        $relationship = new ResourceModel();
+        $subRelationship = new ResourceModel();
+        $subRelationship->setId(321);
+        $relationship->extraField1 = $subRelationship;
+        $resource->extraField1 = $relationship;
+        $compoundDocument = [
+            'data' => [
+                'id' => '123',
+                'type' => 'resource-models',
+                'attributes' => ['field1' => 'test'],
+                'relationships' => [
+                    'extra-field1' => [
+                        'data' => ['id' => '123', 'type' => 'resource-models'],
+                        'links' => [
+                            'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field1'],
+                            'related' => ['href' => 'http://example.com/resource/123/extra-field1'],
+                        ]
+                    ],
+                ],
+                'links' => ['self' => ['href' => 'http://example.com/resource/123']],
+            ],
+            'included' => [
+                [
+                    'id' => '123',
+                    'type' => 'resource-models',
+                    'attributes' => ['field1' => 'test'],
+                    'relationships' => [
+                        'extra-field1' => [
+                            'data' => ['id' => '321', 'type' => 'resource-models'],
+                            'links' => [
+                                'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field1'],
+                                'related' => ['href' => 'http://example.com/resource/123/extra-field1'],
+                            ]
+                        ],
+                    ],
+                    'links' => ['self' => ['href' => 'http://example.com/resource/123']],
+                ],
+                [
+                    'id' => '321',
+                    'type' => 'resource-models',
+                    'attributes' => ['field1' => 'test'],
+                    'relationships' => [
+                        'extra-field1' => [
+                            'links' => [
+                                'self' => ['href' => 'http://example.com/resource/321/relationships/extra-field1'],
+                                'related' => ['href' => 'http://example.com/resource/321/extra-field1'],
+                            ]
+                        ],
+                    ],
+                    'links' => ['self' => ['href' => 'http://example.com/resource/321']],
+                ]
+            ]
+        ];
+
+        $serializer = new Serializer();
+        \Yii::$app->request->setQueryParams(['include' => 'extra-field1.extra-field1']);
+        $this->assertSame($compoundDocument, $serializer->serialize($resource));
+    }
+
     public function testIncludedDuplicates()
     {
         $serializer = new Serializer();
@@ -156,23 +238,25 @@ class SerializerTest extends TestCase
                 'field1' => 'test',
                 'field2' => 2,
             ],
-        ];
-        $compoundModel['relationships'] = [
-            'extra-field1' => [
-                'data' => ['id' => '123', 'type' => 'resource-models'],
-                'links' => [
-                    'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field1'],
-                    'related' => ['href' => 'http://example.com/resource/123/extra-field1'],
-                ]
-            ],
-            'extra-field2' => [
-                'data' => ['id' => '123', 'type' => 'resource-models'],
-                'links' => [
-                    'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field2'],
-                    'related' => ['href' => 'http://example.com/resource/123/extra-field2'],
+            'relationships' => [
+                'extra-field1' => [
+                    'data' => ['id' => '123', 'type' => 'resource-models'],
+                    'links' => [
+                        'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field1'],
+                        'related' => ['href' => 'http://example.com/resource/123/extra-field1'],
+                    ]
+                ],
+                'extra-field2' => [
+                    'data' => ['id' => '123', 'type' => 'resource-models'],
+                    'links' => [
+                        'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field2'],
+                        'related' => ['href' => 'http://example.com/resource/123/extra-field2'],
+                    ]
                 ]
             ]
         ];
+        unset($includedModel['relationships']['extra-field1']['data']);
+        unset($includedModel['relationships']['extra-field2']['data']);
         $compoundModel['links'] = $includedModel['links'] = [
             'self' => ['href' => 'http://example.com/resource/123']
         ];
