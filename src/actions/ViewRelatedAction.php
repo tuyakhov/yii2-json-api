@@ -45,7 +45,7 @@ class ViewRelatedAction extends Action
         }
 
         if ($this->prepareDataProvider !== null) {
-            return call_user_func($this->prepareDataProvider, $this, $related);
+            return call_user_func($this->prepareDataProvider, $this, $related, $name);
         }
 
         if ($related->multiple) {
