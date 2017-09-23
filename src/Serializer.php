@@ -102,14 +102,22 @@ class Serializer extends Component
     }
 
     /**
+     * @param array $included
      * @param ResourceInterface $model
      * @return array
      */
-    protected function serializeModel(ResourceInterface $model, array $included = null)
+    protected function serializeModel(ResourceInterface $model, array $included = [])
     {
         $fields = $this->getRequestedFields();
         $type = $this->pluralize ? Inflector::pluralize($model->getType()) : $model->getType();
         $fields = isset($fields[$type]) ? $fields[$type] : [];
+
+        $topLevel = array_map(function($item) {
+            if (($pos = strrpos($item, '.')) !== false) {
+                return substr($item, 0, $pos);
+            }
+            return $item;
+        }, $included);
 
         $attributes = $model->getResourceAttributes($fields);
         $attributes = array_combine($this->prepareMemberNames(array_keys($attributes)), array_values($attributes));
@@ -118,7 +126,7 @@ class Serializer extends Component
             'attributes' => $attributes,
         ]);
 
-        $relationships = $model->getResourceRelationships($included);
+        $relationships = $model->getResourceRelationships($topLevel);
         if (!empty($relationships)) {
             foreach ($relationships as $name => $items) {
                 $relationship = [];
@@ -161,19 +169,9 @@ class Serializer extends Component
         if ($this->request->getIsHead()) {
             return null;
         } else {
-            $included = $topLevel = $this->getIncluded();
-
-            if ($included !== null) {
-                $topLevel = array_map(function($item) {
-                    if (($pos = strrpos($item, '.')) !== false) {
-                        return substr($item, 0, $pos);
-                    }
-                    return $item;
-                }, $included);
-            }
-
+            $included = $this->getIncluded();
             $data = [
-                'data' => $this->serializeModel($resource, $topLevel)
+                'data' => $this->serializeModel($resource, $included)
             ];
 
             $relatedResources = $this->serializeIncluded($resource, $included);
@@ -210,37 +208,31 @@ class Serializer extends Component
 
     /**
      * @param ResourceInterface|array $resources
-     * @param null|array $included
+     * @param array $included
+     * @param true $assoc
      * @return array
      */
-    protected function serializeIncluded($resources, array $included = null)
+    protected function serializeIncluded($resources, array $included = [], $assoc = false)
     {
         $resources = is_array($resources) ? $resources : [$resources];
         $data = [];
 
-        if ($included === null) {
-            return [];
-        }
-
         $inclusion = [];
-        $linked = [];
         foreach ($included as $path) {
             if (($pos = strrpos($path, '.')) === false) {
-                $linked[] = $path;
                 $inclusion[$path] = [];
                 continue;
             }
             $name = substr($path, $pos + 1);
             $key = substr($path, 0, $pos);
             $inclusion[$key][] = $name;
-            $linked[] = $key;
         }
 
         foreach ($resources as $resource) {
             if (!$resource instanceof  ResourceInterface) {
                 continue;
             }
-            $relationships = $resource->getResourceRelationships($linked);
+            $relationships = $resource->getResourceRelationships(array_keys($inclusion));
             foreach ($relationships as $name => $relationship) {
                 if ($relationship === null) {
                     continue;
@@ -249,18 +241,21 @@ class Serializer extends Component
                     $relationship = [$relationship];
                 }
                 foreach ($relationship as $model) {
-                    if ($model instanceof ResourceInterface) {
-                        $uniqueKey = $model->getType() . '/' . $model->getId();
+                    if (!$model instanceof ResourceInterface) {
+                        continue;
+                    }
+                    $uniqueKey = $model->getType() . '/' . $model->getId();
+                    if (!isset($data[$uniqueKey])) {
                         $data[$uniqueKey] = $this->serializeModel($model, $inclusion[$name]);
-                        if (!empty($inclusion[$name])) {
-                            $data = array_merge($data, $this->serializeIncluded($model, $inclusion[$name]));
-                        }
+                    }
+                    if (!empty($inclusion[$name])) {
+                        $data = array_merge($data, $this->serializeIncluded($model, $inclusion[$name], true));
                     }
                 }
             }
         }
 
-        return array_values($data);
+        return $assoc ? $data : array_values($data);
     }
 
     /**
@@ -359,9 +354,6 @@ class Serializer extends Component
     protected function getIncluded()
     {
         $include = $this->request->get($this->expandParam);
-        if (!$this->request->isGet) {
-            return null;
-        }
         return is_string($include) ? array_map($this->formatMemberName, preg_split('/\s*,\s*/', $include, -1, PREG_SPLIT_NO_EMPTY)) : [];
     }
 
