@@ -51,10 +51,10 @@ trait ResourceTrait
     }
 
     /**
-     * @param null|array $linked
+     * @param array $linked
      * @return array
      */
-    public function getResourceRelationships(array $linked = null)
+    public function getResourceRelationships(array $linked = [])
     {
         $fields = [];
         if ($this instanceof Arrayable) {
@@ -62,9 +62,7 @@ trait ResourceTrait
         }
         $resolvedFields = $this->resolveFields($fields);
         $keys = array_keys($resolvedFields);
-        if ($linked === null) {
-            $linked = $keys;
-        }
+
         $relationships = array_fill_keys($keys, null);
         $linkedFields = array_intersect($keys, $linked);
 

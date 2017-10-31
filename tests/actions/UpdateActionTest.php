@@ -49,7 +49,7 @@ class UpdateActionTest extends TestCase
         $this->assertInstanceOf(ResourceModel::className(), $model = $action->run(1));
         $this->assertFalse($model->hasErrors());
         $this->assertEquals('test', $model->field1);
-        $relationships = $model->getResourceRelationships();
+        $relationships = $model->getResourceRelationships(['extra_field1']);
         $this->assertArrayHasKey('extra_field1', $relationships);
         $this->assertInstanceOf(ResourceModel::className(), $relationships['extra_field1']);
         $this->assertEquals(124, $relationships['extra_field1']->id);

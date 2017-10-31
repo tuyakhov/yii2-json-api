@@ -81,25 +81,28 @@ class SerializerTest extends TestCase
                 'related' => ['href' => 'http://example.com/resource/123/extra-field1'],
             ]
         ];
-        $expected = [
-            'data' => [
-                'id' => '123',
-                'type' => 'resource-models',
-                'attributes' => [
-                    'first-name' => 'Bob',
-                ],
-                'relationships' => [
-                    'extra-field1' => [
-                        'links' => $relationship['links']
-                    ]
-                ],
-                'links' => [
-                    'self' => ['href' => 'http://example.com/resource/123']
+        $resource = [
+            'id' => '123',
+            'type' => 'resource-models',
+            'attributes' => [
+                'first-name' => 'Bob',
+            ],
+            'relationships' => [
+                'extra-field1' => [
+                    'links' => $relationship['links']
                 ]
+            ],
+            'links' => [
+                'self' => ['href' => 'http://example.com/resource/123']
             ]
+        ];
+        $expected = [
+            'data' => $resource
         ];
         $this->assertSame($expected, $serializer->serialize($model));
         $_POST[$serializer->request->methodParam] = 'POST';
+        \Yii::$app->request->setQueryParams(['include' => 'extra-field1']);
+        $expected['included'][] = $resource;
         $expected['data']['relationships']['extra-field1'] = $relationship;
         $this->assertSame($expected, $serializer->serialize($model));
     }
@@ -264,10 +267,12 @@ class SerializerTest extends TestCase
         $model = new ResourceModel();
         ResourceModel::$fields = ['field1', 'field2'];
         ResourceModel::$extraFields = ['extraField1', 'extraField2'];
+        $relationship = new ResourceModel();
+        $relationship->extraField1 = new ResourceModel();
+        $model->extraField2 = $relationship;
         $model->extraField1 = new ResourceModel();
-        $model->extraField2 = new ResourceModel();
 
-        \Yii::$app->request->setQueryParams(['include' => 'extra-field1,extra-field2']);
+        \Yii::$app->request->setQueryParams(['include' => 'extra-field1,extra-field2.extra-field1']);
         $this->assertSame([
             'data' => $compoundModel,
             'included' => [
@@ -280,7 +285,7 @@ class SerializerTest extends TestCase
                 $includedModel
             ],
             'links' => [
-                'self' => ['href' => '/index.php?r=&include=extra-field1%2Cextra-field2&page=1']
+                'self' => ['href' => '/index.php?r=&include=extra-field1%2Cextra-field2.extra-field1&page=1']
             ],
             'meta' => [
                 'total-count' => 1,

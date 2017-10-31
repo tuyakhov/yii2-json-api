@@ -44,7 +44,7 @@ class CreateActionTest extends TestCase
 
         $this->assertInstanceOf(ResourceModel::className(), $model = $action->run());
         $this->assertFalse($model->hasErrors());
-        $relationships = $model->getResourceRelationships();
+        $relationships = $model->getResourceRelationships(['extra_field1']);
         $this->assertArrayHasKey('extra_field1', $relationships);
         $this->assertInstanceOf(ResourceModel::className(), $relationships['extra_field1']);
         $this->assertEquals(124, $relationships['extra_field1']->id);
