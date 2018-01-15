@@ -8,11 +8,29 @@ namespace tuyakhov\jsonapi;
 use yii\base\Component;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
+use yii\web\ErrorHandler;
 use yii\web\Response;
 use yii\web\ResponseFormatterInterface;
 
 class JsonApiResponseFormatter extends Component implements ResponseFormatterInterface
 {
+    /**
+     * Mapping between the error handler component and JSON API error object
+     * @see ErrorHandler::convertExceptionToArray()
+     */
+    const ERROR_EXCEPTION_MAPPING = [
+        'title' => 'name',
+        'detail' => 'message',
+        'code' => 'code',
+        'status' => 'status'
+    ];
+    /**
+     * An error object MAY have the following members
+     * @link http://jsonapi.org/format/#error-objects
+     */
+    const ERROR_ALLOWED_MEMBERS = [
+        'id', 'links', 'status', 'code', 'title', 'detail', 'source', 'meta'
+    ];
     /**
      * @var integer the encoding options passed to [[Json::encode()]]. For more details please refer to
      * <http://www.php.net/manual/en/function.json-encode.php>.
@@ -44,7 +62,19 @@ class JsonApiResponseFormatter extends Component implements ResponseFormatterInt
                 if (ArrayHelper::isAssociative($response->data)) {
                     $response->data = [$response->data];
                 }
-                $apiDocument = ['errors' => $response->data];
+                $formattedErrors = [];
+                foreach ($response->data as $error) {
+                    $formattedError = array_intersect_key($error, array_flip(static::ERROR_ALLOWED_MEMBERS));
+                    foreach (static::ERROR_EXCEPTION_MAPPING as $member => $key) {
+                        if (isset($error[$key])) {
+                            $formattedError[$member] = (string) $error[$key];
+                        }
+                    }
+                    if (!empty($formattedError)) {
+                        $formattedErrors[] = $formattedError;
+                    }
+                }
+                $apiDocument = ['errors' => $formattedErrors];
             }
 
             $response->content = Json::encode($apiDocument, $options);

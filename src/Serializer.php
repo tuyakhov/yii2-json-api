@@ -326,6 +326,7 @@ class Serializer extends Component
             $result[] = [
                 'source' => ['pointer' => "/data/attributes/{$memberName}"],
                 'detail' => $message,
+                'status' => '422'
             ];
         }
 

@@ -5,6 +5,7 @@
 namespace tuyakhov\jsonapi\tests;
 
 use \yii\helpers\ArrayHelper;
+use yii\web\Response;
 
 class TestCase extends \PHPUnit_Framework_TestCase
 {
@@ -37,6 +38,12 @@ class TestCase extends \PHPUnit_Framework_TestCase
                     'cookieValidationKey' => 'wefJDF8sfdsfSDefwqdxj9oq',
                     'scriptFile' => __DIR__ .'/index.php',
                     'scriptUrl' => '/index.php',
+                ],
+                'response' => [
+                    'format' => Response::FORMAT_JSON,
+                    'formatters' => [
+                        Response::FORMAT_JSON => 'tuyakhov\jsonapi\JsonApiResponseFormatter'
+                    ]
                 ]
             ],
             'vendorPath' => $this->getVendorPath(),
