@@ -40,14 +40,17 @@ class SerializerTest extends TestCase
             [
                 'source' => ['pointer' => "/data/attributes/field1"],
                 'detail' => 'Test error',
+                'status' => '422'
             ],
             [
                 'source' => ['pointer' => "/data/attributes/field2"],
                 'detail' => 'Multiple error 1',
+                'status' => '422'
             ],
             [
                 'source' => ['pointer' => "/data/attributes/first-name"],
                 'detail' => 'Member name check',
+                'status' => '422'
             ]
         ], $serializer->serialize($model));
     }
