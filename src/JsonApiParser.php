@@ -34,11 +34,14 @@ class JsonApiParser extends JsonParser
     public function parse($rawBody, $contentType)
     {
         $array = parent::parse($rawBody, $contentType);
-        $data =  ArrayHelper::getValue($array, 'data', []);
-        if (empty($data)) {
+        if (!ArrayHelper::keyExists('data', $array)) {
             if ($this->throwException) {
                 throw new BadRequestHttpException('The request MUST include a single resource object as primary data.');
             }
+            return [];
+        }
+        $data =  ArrayHelper::getValue($array, 'data', []);
+        if (empty($data)) {
             return [];
         }
         if (ArrayHelper::isAssociative($data)) {
@@ -109,12 +112,14 @@ class JsonApiParser extends JsonParser
     {
         $relationships = [];
         foreach ($relObjects as $name => $relationship) {
-            if (!$relData = ArrayHelper::getValue($relationship, 'data')) {
+            if (!ArrayHelper::keyExists('data', $relationship)) {
                 continue;
             }
+            $relData = ArrayHelper::getValue($relationship, 'data', []);
             if (!ArrayHelper::isIndexed($relData)) {
                 $relData = [$relData];
             }
+            $relationships[$name] = [];
             foreach ($relData as $identifier) {
                 if (isset($identifier['type']) && isset($identifier['id'])) {
                     $formName = $this->typeToFormName($identifier['type']);
