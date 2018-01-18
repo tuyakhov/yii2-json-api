@@ -87,6 +87,7 @@ trait ResourceTrait
         if (!is_array($relationship)) {
             $relationship = [$relationship];
         }
+        $this->unlinkAll($name);
         foreach ($relationship as $key => $value) {
             if ($value instanceof ActiveRecordInterface) {
                 $this->link($name, $value);

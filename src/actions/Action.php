@@ -55,14 +55,10 @@ class Action extends \yii\rest\Action
                 $ids[] = $relObject['id'];
             }
 
-            if (!$records = $relatedClass::find()->andWhere(['in', $relatedClass::primaryKey(), $ids])->all()) {
-                continue;
-            }
-
             if ($related->multiple && !$this->allowFullReplacement) {
                 continue;
             }
-            $model->unlinkAll($name);
+            $records = $relatedClass::find()->andWhere(['in', $relatedClass::primaryKey(), $ids])->all();
             $model->setResourceRelationship($name, $records);
         }
     }
