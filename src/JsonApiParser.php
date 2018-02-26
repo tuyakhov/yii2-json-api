@@ -35,7 +35,7 @@ class JsonApiParser extends JsonParser
     {
         $array = parent::parse($rawBody, $contentType);
         $method = \Yii::$app->request->method;
-        if (!in_array($method, ['GET', 'DELETE']) && ArrayHelper::keyExists('data', $array)) {
+        if (!in_array($method, ['GET', 'DELETE']) && !ArrayHelper::keyExists('data', $array)) {
             if ($this->throwException) {
                 throw new BadRequestHttpException('The request MUST include a single resource object as primary data.');
             }
