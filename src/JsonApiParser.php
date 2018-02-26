@@ -34,13 +34,14 @@ class JsonApiParser extends JsonParser
     public function parse($rawBody, $contentType)
     {
         $array = parent::parse($rawBody, $contentType);
-        if (!ArrayHelper::keyExists('data', $array)) {
+        $method = \Yii::$app->request->method;
+        if (!in_array($method, ['GET', 'DELETE']) && !ArrayHelper::keyExists('data', $array)) {
             if ($this->throwException) {
                 throw new BadRequestHttpException('The request MUST include a single resource object as primary data.');
             }
             return [];
         }
-        $data =  ArrayHelper::getValue($array, 'data', []);
+        $data = ArrayHelper::getValue($array, 'data', []);
         if (empty($data)) {
             return [];
         }
