@@ -8,9 +8,25 @@ namespace tuyakhov\jsonapi\tests;
 
 use tuyakhov\jsonapi\JsonApiParser;
 use yii\helpers\Json;
+use yii\web\BadRequestHttpException;
 
 class JsonApiParserTest extends TestCase
 {
+    public function testEmptyBody()
+    {
+        $parser = new JsonApiParser();
+        $body = '';
+        $this->assertEquals([], $parser->parse($body, ''));
+    }
+
+    public function testMissingData()
+    {
+        $parser = new JsonApiParser();
+        $this->expectException(BadRequestHttpException::class);
+        $body = Json::encode(['incorrect-member']);
+        $parser->parse($body, '');
+    }
+
     public function testSingleResource()
     {
         $parser = new JsonApiParser();
