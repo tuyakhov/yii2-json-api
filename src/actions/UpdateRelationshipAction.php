@@ -5,7 +5,6 @@
 
 namespace tuyakhov\jsonapi\actions;
 
-use tuyakhov\jsonapi\ResourceInterface;
 use yii\data\ActiveDataProvider;
 use yii\db\BaseActiveRecord;
 use yii\web\BadRequestHttpException;
