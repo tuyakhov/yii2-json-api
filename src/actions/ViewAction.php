@@ -1,15 +1,12 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: anton
- * Date: 3/2/18
- * Time: 5:05 PM
+ * @author Anton Tuyakhov <atuyakhov@gmail.com>
  */
 
 namespace tuyakhov\jsonapi\actions;
 
 
-class ViewAction
+class ViewAction extends \yii\rest\ViewAction
 {
 
 }
