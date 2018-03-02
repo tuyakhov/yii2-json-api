@@ -34,7 +34,7 @@ class JsonApiParser extends JsonParser
     public function parse($rawBody, $contentType)
     {
         $array = parent::parse($rawBody, $contentType);
-        if (!ArrayHelper::keyExists('data', $array)) {
+        if (!empty($array) && !ArrayHelper::keyExists('data', $array)) {
             if ($this->throwException) {
                 throw new BadRequestHttpException('The request MUST include a single resource object as primary data.');
             }
