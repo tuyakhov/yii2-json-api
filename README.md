@@ -4,6 +4,7 @@ Implementation of JSON API specification for the Yii framework
 [![Latest Stable Version](https://poser.pugx.org/tuyakhov/yii2-json-api/v/stable.png)](https://packagist.org/packages/tuyakhov/yii2-json-api)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/tuyakhov/yii2-json-api/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/tuyakhov/yii2-json-api/?branch=master) [![Build Status](https://scrutinizer-ci.com/g/tuyakhov/yii2-json-api/badges/build.png?b=master)](https://scrutinizer-ci.com/g/tuyakhov/yii2-json-api/build-status/master)
 [![Total Downloads](https://poser.pugx.org/tuyakhov/yii2-json-api/downloads.png)](https://packagist.org/packages/tuyakhov/yii2-json-api)
+
 Installation
 ------------
 
@@ -208,3 +209,124 @@ $model->load(\Yii::$app->request->post());
 By default type `users` will be converted into `User` (singular, camelCase) which corresponds to the model's `formName()` method (which you may override).
 You can override the `JsonApiParser::formNameCallback` property which refers to a callback that converts 'type' member to form name.
 Also you could change the default behavior for conversion of member names to variable names ('first-name' converts into 'first_name') by setting `JsonApiParser::memberNameCallback` property.
+
+Examples
+--------
+Controller:
+```php
+class UserController extends \yii\rest\Controller
+{
+    public $serializer = 'tuyakhov\jsonapi\Serializer';
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return ArrayHelper::merge(parent::behaviors(), [
+            'contentNegotiator' => [
+                'class' => ContentNegotiator::className(),
+                'formats' => [
+                    'application/vnd.api+json' => Response::FORMAT_JSON,
+                ],
+            ]
+        ]);
+    }
+    
+    /**
+     * @inheritdoc
+     */
+    public function actions()
+    {
+        return [
+            'create' => [
+                'class' => 'tuyakhov\jsonapi\actions\CreateAction',
+                'modelClass' => ExampleModel::className()
+            ],
+            'update' => [
+                'class' => 'tuyakhov\jsonapi\actions\UpdateAction',
+                'modelClass' => ExampleModel::className()
+            ],
+            'view' => [
+                'class' => 'tuyakhov\jsonapi\actions\ViewAction',
+                'modelClass' => ExampleModel::className(),
+            ],
+            'delete' => [
+                'class' => 'tuyakhov\jsonapi\actions\DeleteAction',
+                'modelClass' => ExampleModel::className(),
+            ],
+            'view-related' => [
+                'class' => 'tuyakhov\jsonapi\actions\ViewRelatedAction',
+                'modelClass' => ExampleModel::className()
+            ],
+            'update-relationship' => [
+                'class' => 'tuyakhov\jsonapi\actions\UpdateRelationshipAction',
+                'modelClass' => ExampleModel::className()
+            ],
+            'delete-relationship' => [
+                'class' => 'tuyakhov\jsonapi\actions\DeleteRelationshipAction',
+                'modelClass' => ExampleModel::className()
+            ],
+            'options' => [
+                'class' => 'yii\rest\OptionsAction',
+            ],
+        ];
+    }
+}
+
+```
+
+Model:
+```php
+class User extends ActiveRecord implements LinksInterface, ResourceInterface
+{
+    use ResourceTrait;
+    
+    public function getLinks()
+    {
+        $reflect = new \ReflectionClass($this);
+        $controller = Inflector::camel2id($reflect->getShortName());
+        return [
+            Link::REL_SELF => Url::to(["$controller/view", 'id' => $this->getId()], true)
+        ];
+    }
+}
+```
+
+Configuration file `config/main.php`:
+```php
+return [
+    // ...
+    'components' => [
+        'request' => [
+            'parsers' => [
+                'application/vnd.api+json' => 'tuyakhov\jsonapi\JsonApiParser',
+            ]
+        ],
+        'response' => [
+            'format' => \yii\web\Response::FORMAT_JSON,
+            'formatters' => [
+                \yii\web\Response::FORMAT_JSON => 'tuyakhov\jsonapi\JsonApiResponseFormatter'
+            ]
+        ],
+        'urlManager' => [
+            'rules' => [
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => 'user',
+                    'extraPatterns' => [
+                        'GET {id}/<name:\w+>' => 'view-related',
+                        'PATCH {id}/relationships/<name:\w+>' => 'update-relationship',
+                        'DELETE {id}/relationships/<name:\w+>' => 'delete-relationship',
+                        '{id}/<name:\w+>' => 'options'
+                    ],
+                    'except' => ['index'],
+                ],
+
+            ]
+        ]
+        // ...
+    ]
+    // ...
+]
+```
