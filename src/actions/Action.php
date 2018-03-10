@@ -26,7 +26,7 @@ class Action extends \yii\rest\Action
     /**
      * Links the relationships with primary model.
      * @param $model ActiveRecordInterface
-     * @param array $data
+     * @param array $data relationship links
      */
     protected function linkRelationships($model, array $data = [])
     {

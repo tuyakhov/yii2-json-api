@@ -86,7 +86,17 @@ class ResourceModel extends Model implements ResourceInterface, LinksInterface
         $this->$name = null;
     }
 
+    public function unlink($name, $model)
+    {
+        array_pop($this->$name);
+    }
+
     public function save()
+    {
+        return true;
+    }
+
+    public function delete()
     {
         return true;
     }
