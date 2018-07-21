@@ -17,7 +17,6 @@ class JsonApiResponseFormatterTest extends TestCase
 {
     public function testFormatException()
     {
-        \Yii::$app->controller = new Controller('test', \Yii::$app);
         $formatter = new JsonApiResponseFormatter();
         $exception = new ServerErrorHttpException('Server error');
         $response = new Response();
@@ -44,7 +43,6 @@ class JsonApiResponseFormatterTest extends TestCase
 
     public function testFormModelError()
     {
-        \Yii::$app->controller = new Controller('test', \Yii::$app);
         $formatter = new JsonApiResponseFormatter();
         $exception = new ServerErrorHttpException('Server error');
         $response = new Response();
@@ -70,5 +68,32 @@ class JsonApiResponseFormatterTest extends TestCase
                 ]
             ]
         ]), $response->content);
+    }
+
+    public function testEmptyData()
+    {
+        $formatter = new JsonApiResponseFormatter();
+        $response = new Response();
+        $response->setStatusCode('200');
+        $serializer = new Serializer();
+        $response->data = $serializer->serialize(null);
+        $formatter->format($response);
+        $this->assertJson($response->content);
+        $this->assertSame(Json::encode([
+            'data' => null
+        ]), $response->content);
+        \Yii::$app->controller = new Controller('test', \Yii::$app);
+        $formatter->format($response);
+        $this->assertJson($response->content);
+        $this->assertSame(Json::encode([
+            'data' => null,
+            'links' => [
+                'self' => ['href' => '/index.php?r=test']
+            ]
+        ]), $response->content);
+        $response->clear();
+        $response->setStatusCode(201);
+        $formatter->format($response);
+        $this->assertNull($response->content);
     }
 }

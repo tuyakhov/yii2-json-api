@@ -10,6 +10,7 @@ use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 use yii\helpers\Url;
 use yii\web\ErrorHandler;
+use yii\web\Link;
 use yii\web\Response;
 use yii\web\ResponseFormatterInterface;
 
@@ -53,37 +54,42 @@ class JsonApiResponseFormatter extends Component implements ResponseFormatterInt
     public function format($response)
     {
         $response->getHeaders()->set('Content-Type', 'application/vnd.api+json; charset=UTF-8');
-        $apiDocument = [
-            'data' => $response->data,
-            'links' => [
-                'self' => Url::current([], true)
-            ]
-        ];
         $options = $this->encodeOptions;
         if ($this->prettyPrint) {
             $options |= JSON_PRETTY_PRINT;
         }
-        if ($response->data !== null) {
-            $apiDocument = $response->data;
-            if ($response->isClientError || $response->isServerError) {
-                if (ArrayHelper::isAssociative($response->data)) {
-                    $response->data = [$response->data];
-                }
-                $formattedErrors = [];
-                foreach ($response->data as $error) {
-                    $formattedError = array_intersect_key($error, array_flip(static::ERROR_ALLOWED_MEMBERS));
-                    foreach (static::ERROR_EXCEPTION_MAPPING as $member => $key) {
-                        if (isset($error[$key])) {
-                            $formattedError[$member] = (string) $error[$key];
-                        }
-                    }
-                    if (!empty($formattedError)) {
-                        $formattedErrors[] = $formattedError;
-                    }
-                }
-                $apiDocument = ['errors' => $formattedErrors];
+
+        $apiDocument = $response->data;
+
+        if (!$response->isEmpty) {
+            $apiDocument = ['data' => $response->data];
+            if (\Yii::$app->controller) {
+                $apiDocument['links'] = Link::serialize([
+                    Link::REL_SELF => Url::current([], true)
+                ]);
             }
         }
-        $response->content = Json::encode($apiDocument, $options);
+
+        if ($response->isClientError || $response->isServerError) {
+            if (ArrayHelper::isAssociative($response->data)) {
+                $response->data = [$response->data];
+            }
+            $formattedErrors = [];
+            foreach ($response->data as $error) {
+                $formattedError = array_intersect_key($error, array_flip(static::ERROR_ALLOWED_MEMBERS));
+                foreach (static::ERROR_EXCEPTION_MAPPING as $member => $key) {
+                    if (isset($error[$key])) {
+                        $formattedError[$member] = (string) $error[$key];
+                    }
+                }
+                if (!empty($formattedError)) {
+                    $formattedErrors[] = $formattedError;
+                }
+            }
+            $apiDocument = ['errors' => $formattedErrors];
+        }
+        if ($apiDocument !== null) {
+            $response->content = Json::encode($apiDocument, $options);
+        }
     }
 }
