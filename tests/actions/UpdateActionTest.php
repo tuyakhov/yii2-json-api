@@ -1,9 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: anton
- * Date: 08/03/2017
- * Time: 19:07
+ * @author Anton Tuyakhov <atuyakhov@gmail.com>
  */
 
 namespace tuyakhov\jsonapi\tests\actions;

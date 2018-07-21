@@ -8,6 +8,7 @@ namespace tuyakhov\jsonapi;
 use yii\base\Component;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
+use yii\helpers\Url;
 use yii\web\ErrorHandler;
 use yii\web\Response;
 use yii\web\ResponseFormatterInterface;
@@ -52,11 +53,17 @@ class JsonApiResponseFormatter extends Component implements ResponseFormatterInt
     public function format($response)
     {
         $response->getHeaders()->set('Content-Type', 'application/vnd.api+json; charset=UTF-8');
+        $apiDocument = [
+            'data' => $response->data,
+            'links' => [
+                'self' => Url::current([], true)
+            ]
+        ];
+        $options = $this->encodeOptions;
+        if ($this->prettyPrint) {
+            $options |= JSON_PRETTY_PRINT;
+        }
         if ($response->data !== null) {
-            $options = $this->encodeOptions;
-            if ($this->prettyPrint) {
-                $options |= JSON_PRETTY_PRINT;
-            }
             $apiDocument = $response->data;
             if ($response->isClientError || $response->isServerError) {
                 if (ArrayHelper::isAssociative($response->data)) {
@@ -76,8 +83,7 @@ class JsonApiResponseFormatter extends Component implements ResponseFormatterInt
                 }
                 $apiDocument = ['errors' => $formattedErrors];
             }
-
-            $response->content = Json::encode($apiDocument, $options);
         }
+        $response->content = Json::encode($apiDocument, $options);
     }
 }

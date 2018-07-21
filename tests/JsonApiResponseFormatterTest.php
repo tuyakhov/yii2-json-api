@@ -8,6 +8,7 @@ namespace tuyakhov\jsonapi\tests;
 use tuyakhov\jsonapi\JsonApiResponseFormatter;
 use tuyakhov\jsonapi\Serializer;
 use tuyakhov\jsonapi\tests\data\ResourceModel;
+use yii\base\Controller;
 use yii\helpers\Json;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -16,6 +17,7 @@ class JsonApiResponseFormatterTest extends TestCase
 {
     public function testFormatException()
     {
+        \Yii::$app->controller = new Controller('test', \Yii::$app);
         $formatter = new JsonApiResponseFormatter();
         $exception = new ServerErrorHttpException('Server error');
         $response = new Response();
@@ -42,6 +44,7 @@ class JsonApiResponseFormatterTest extends TestCase
 
     public function testFormModelError()
     {
+        \Yii::$app->controller = new Controller('test', \Yii::$app);
         $formatter = new JsonApiResponseFormatter();
         $exception = new ServerErrorHttpException('Server error');
         $response = new Response();
