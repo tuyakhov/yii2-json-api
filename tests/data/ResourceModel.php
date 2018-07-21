@@ -28,6 +28,13 @@ class ResourceModel extends Model implements ResourceInterface, LinksInterface
     public $extraField2 = 42;
     private $_id;
 
+    public function rules()
+    {
+        return [
+            ['field1', 'string']
+        ];
+    }
+
     public function getId()
     {
         if ($this->_id === null) {
