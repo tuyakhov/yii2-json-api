@@ -8,8 +8,10 @@ namespace tuyakhov\jsonapi;
 use yii\base\Component;
 use yii\base\InvalidValueException;
 use yii\base\Model;
+use yii\data\ActiveDataProvider;
 use yii\data\DataProviderInterface;
 use yii\data\Pagination;
+use yii\db\QueryInterface;
 use yii\web\Link;
 use yii\web\Linkable;
 use yii\web\Request;
@@ -94,6 +96,8 @@ class Serializer extends Component
             return $this->serializeModelErrors($data);
         } elseif ($data instanceof ResourceInterface) {
             return $this->serializeResource($data);
+        } elseif ($data instanceof ActiveDataProvider) {
+            return $this->serializeActiveDataProvider($data);
         } elseif ($data instanceof DataProviderInterface) {
             return $this->serializeDataProvider($data);
         } else {
@@ -256,6 +260,21 @@ class Serializer extends Component
         }
 
         return $assoc ? $data : array_values($data);
+    }
+
+    /**
+     * Serializes a data provider.
+     * @param ActiveDataProvider $dataProvider
+     * @return array the array representation of the data provider.
+     */
+    protected function serializeActiveDataProvider($dataProvider)
+    {
+        if ($dataProvider->query instanceof QueryInterface) {
+            $dataProvider->query
+                ->andFilterWhere($this->getFiltered())
+                ->addOrderBy();
+        }
+        return $this->serializeDataProvider($dataProvider);
     }
 
     /**
