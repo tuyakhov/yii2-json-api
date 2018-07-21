@@ -70,6 +70,33 @@ class JsonApiResponseFormatterTest extends TestCase
         ]), $response->content);
     }
 
+    public function testSuccessModel()
+    {
+        $formatter = new JsonApiResponseFormatter();
+        $response = new Response();
+        $serializer = new Serializer();
+        $model = new ResourceModel();
+        $response->data = $serializer->serialize($model);
+        $response->setStatusCode(200);
+        $formatter->format($response);
+        $this->assertJson($response->content);
+        $this->assertSame(Json::encode([
+            'data' => [
+                'id' => '123',
+                'type' => 'resource-models',
+                'attributes' => [
+                    'field1' => 'test',
+                    'field2' => 2,
+                ],
+                'links' => [
+                    'self' => [
+                        'href' => 'http://example.com/resource/123'
+                    ]
+                ]
+            ]
+        ]), $response->content);
+    }
+
     public function testEmptyData()
     {
         $formatter = new JsonApiResponseFormatter();

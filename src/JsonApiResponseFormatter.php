@@ -61,7 +61,7 @@ class JsonApiResponseFormatter extends Component implements ResponseFormatterInt
 
         $apiDocument = $response->data;
 
-        if (!$response->isEmpty) {
+        if (!$response->isEmpty && empty($apiDocument)) {
             $apiDocument = ['data' => $response->data];
             if (\Yii::$app->controller) {
                 $apiDocument['links'] = Link::serialize([
