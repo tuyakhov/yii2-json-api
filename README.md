@@ -1,3 +1,4 @@
+<p align="center"><img width="30%" src ="https://jsonapi.org/images/jsonapi.png" /></p>
 
 Implementation of JSON API specification for the Yii framework
 ==================================================================
