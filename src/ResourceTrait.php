@@ -64,11 +64,27 @@ trait ResourceTrait
         $keys = array_keys($resolvedFields);
 
         $relationships = array_fill_keys($keys, null);
+
+        $closureFields = array_filter($resolvedFields, function($value, $key) {
+            return is_callable($value);
+        }, ARRAY_FILTER_USE_BOTH);
+
+        foreach ($closureFields as $name => $value) {
+            $result = call_user_func($value, $this, $name);
+            if (isset($result['data'])) {
+                $relationships[$name] = $result['data'];
+            }
+        }
+
         $linkedFields = array_intersect($keys, $linked);
 
         foreach ($linkedFields as $name) {
             $definition = $resolvedFields[$name];
-            $relationships[$name] = is_string($definition) ? $this->$definition : call_user_func($definition, $this, $name);
+            $result = is_string($definition) ? $this->$definition : call_user_func($definition, $this, $name);
+
+            $relationships[$name] = (is_array($result) && isset($result['resource']))
+                ? $result['resource']
+                : $result;
         }
 
         return $relationships;
