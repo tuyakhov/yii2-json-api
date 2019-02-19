@@ -41,6 +41,19 @@ class IndexActionTest extends TestCase
         $this->assertSame(['field1' => SORT_ASC, 'field2' => SORT_DESC], $dataProvider->getSort()->orders);
     }
 
+    public function testPageTwo()
+    {
+        $action = new IndexAction('test', new Controller('test', \Yii::$app), [
+            'modelClass' => ResourceModel::className()
+        ]);
+        $page = [
+            "page" => 2,
+        ];
+        \Yii::$app->getRequest()->setQueryParams($page);
+        $this->assertInstanceOf(ActiveDataProvider::className(), $dataProvider = $action->run());
+        $this->assertSame($page, $dataProvider->getPagination()->params);
+    }
+
     public function testValidation()
     {
         $action = new IndexAction('test', new Controller('test', \Yii::$app), [
