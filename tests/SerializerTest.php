@@ -6,6 +6,7 @@ namespace tuyakhov\jsonapi\tests;
 
 use tuyakhov\jsonapi\tests\data\ResourceModel;
 use tuyakhov\jsonapi\Serializer;
+use tuyakhov\jsonapi\Relationship;
 use yii\base\InvalidValueException;
 use yii\data\ArrayDataProvider;
 
@@ -489,5 +490,66 @@ class SerializerTest extends TestCase
                 ]
             ]
         ], $serializer->serialize($model));
+    }
+
+    public function testSerializeRelationshipMultipleEmpty()
+    {
+        $serializer = new Serializer();
+        $relationship = new Relationship([
+            'multiple' => true
+        ]);
+        $response = $serializer->serialize($relationship);
+        $this->assertSame([
+            'data' => []
+        ], $response);
+    }
+
+    public function testSerializeRelationshipMultipleSuccess()
+    {
+        $serializer = new Serializer();
+        $models = [
+            new ResourceModel(),
+        ];
+        $relationship = new Relationship([
+            'multiple' => true,
+            'relations' => $models
+        ]);
+        $response = $serializer->serialize($relationship);
+        $this->assertSame([
+            'data' => [
+                [
+                    'id' => '123',
+                    'type' => 'resource-models'
+                ]
+            ]
+        ], $response);
+    }
+
+    public function testSerializeRelationshipSingleEmpty()
+    {
+        $serializer = new Serializer();
+        $relationship = new Relationship([]);
+        $response = $serializer->serialize($relationship);
+        $this->assertSame([
+            'data' => null
+        ], $response);
+    }
+
+    public function testSerializeRelationshipSingleSuccess()
+    {
+        $serializer = new Serializer();
+        $models = [
+            new ResourceModel(),
+        ];
+        $relationship = new Relationship([
+            'relations' => $models
+        ]);
+        $response = $serializer->serialize($relationship);
+        $this->assertSame([
+            'data' => [
+                    'id' => '123',
+                    'type' => 'resource-models'
+            ]
+        ], $response);
     }
 }

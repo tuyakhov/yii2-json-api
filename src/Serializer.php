@@ -96,6 +96,8 @@ class Serializer extends Component
             return $this->serializeResource($data);
         } elseif ($data instanceof DataProviderInterface) {
             return $this->serializeDataProvider($data);
+        } elseif ($data instanceof Relationship) {
+            return $this->serializeRelationshipResource($data);
         } else {
             return $data;
         }
@@ -109,7 +111,7 @@ class Serializer extends Component
     protected function serializeModel(ResourceInterface $model, array $included = [])
     {
         $fields = $this->getRequestedFields();
-        $type = $this->pluralize ? Inflector::pluralize($model->getType()) : $model->getType();
+        $type = $this->getType($model);
         $fields = isset($fields[$type]) ? $fields[$type] : [];
 
         $topLevel = array_map(function($item) {
@@ -333,6 +335,36 @@ class Serializer extends Component
         return $result;
     }
 
+    protected function serializeRelationshipResource($relationship)
+    {
+        return [
+            'data' => $this->serializeRelationships($relationship)
+        ];
+    }
+
+    public function serializeRelationships($relationship)
+    {
+        if (!$relationship->multiple) {
+            if (!count($relationship->relations)) {
+                return null;
+            }
+            return $this->serializeRelationship($relationship->relations[0]);
+        }
+
+        return array_map(function($relation) {
+            return $this->serializeRelationship($relation);
+        }, $relationship->relations);
+    }
+
+    public function serializeRelationship($relationship) 
+    {
+        $primaryKey = $relationship->getPrimaryKey(true);
+        return [
+            "id" => implode("-", $primaryKey),
+            "type" => $this->getType($relationship),
+        ];
+    }
+
     /**
      * @return array
      */
@@ -368,5 +400,10 @@ class Serializer extends Component
     protected function prepareMemberNames(array $memberNames = [])
     {
         return array_map($this->prepareMemberName, $memberNames);
+    }
+
+    protected function getType($model)
+    {
+        return $this->pluralize ? Inflector::pluralize($model->getType()) : $model->getType();
     }
 }
