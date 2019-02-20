@@ -260,6 +260,10 @@ class UserController extends \yii\rest\Controller
                 'class' => 'tuyakhov\jsonapi\actions\ViewRelatedAction',
                 'modelClass' => ExampleModel::className()
             ],
+            'view-relationship' => [
+                'class' => 'tuyakhov\jsonapi\actions\ViewRelationsipAction',
+                'modelClass' => ExampleModel::className()
+            ],
             'update-relationship' => [
                 'class' => 'tuyakhov\jsonapi\actions\UpdateRelationshipAction',
                 'modelClass' => ExampleModel::className()
@@ -313,14 +317,8 @@ return [
         'urlManager' => [
             'rules' => [
                 [
-                    'class' => 'yii\rest\UrlRule',
-                    'controller' => 'user',
-                    'extraPatterns' => [
-                        'GET {id}/<name:\w+>' => 'view-related',
-                        'PATCH {id}/relationships/<name:\w+>' => 'update-relationship',
-                        'DELETE {id}/relationships/<name:\w+>' => 'delete-relationship',
-                        '{id}/<name:\w+>' => 'options'
-                    ],
+                    'class' => 'tukyahov\jsonapi\UrlRule',
+                    'controller' => ['user'],
                     'except' => ['index'],
                 ],
 

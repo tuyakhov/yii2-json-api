@@ -24,7 +24,8 @@ class UrlRule extends \yii\rest\UrlRule
             'DELETE {id}/relationships/{relationship}' => 'delete-relationship',
             'POST,PATCH {id}/relationships/{relationship}' => 'update-relationship',
             'GET {id}/{relationship}' => 'view-related',
-            '{id}/{relationship}' => 'options'
+            '{id}/{relationship}' => 'options',
+            'GET {id}/relationships/{relationship}' => 'view-relationship',
         ]);
         parent::init();
     }
