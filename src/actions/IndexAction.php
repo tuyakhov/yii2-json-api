@@ -100,7 +100,6 @@ class IndexAction extends Action
             'class' => ActiveDataProvider::className(),
             'query' => $query,
             'pagination' => [
-                'params' => ["page" => Yii::$app->getRequest()->getQueryParam('page', [])],
                 'pageSizeParam' => 'size'
             ],
             'sort' => [
