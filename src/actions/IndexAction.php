@@ -118,7 +118,7 @@ class IndexAction extends Action
         $attributeMap = [];
         foreach ($requestParams as $attribute => $value) {
             $attributeMap[$attribute] = Inflector::camel2id(Inflector::variablize($attribute), '_');
-            if (strpos($value, ',') !== false) {
+            if (is_string($value) && strpos($value, ',') !== false) {
                 $requestParams[$attribute] = ['in' => explode(',', $value)];
             }
         }
