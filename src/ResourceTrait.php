@@ -13,6 +13,12 @@ use yii\web\Linkable;
 trait ResourceTrait
 {
     /**
+     * @var bool a flag that enables/disables deleting of the model that contains the foreign key when setting relationships
+     * By default the model's foreign key will be set `null` and saved.
+     */
+    public $allowDeletingResources = false;
+
+    /**
      * @return string
      */
     public function getId()
@@ -87,7 +93,7 @@ trait ResourceTrait
         if (!is_array($relationship)) {
             $relationship = [$relationship];
         }
-        $this->unlinkAll($name);
+        $this->unlinkAll($name, $this->allowDeletingResources);
         foreach ($relationship as $key => $value) {
             if ($value instanceof ActiveRecordInterface) {
                 $this->link($name, $value);
