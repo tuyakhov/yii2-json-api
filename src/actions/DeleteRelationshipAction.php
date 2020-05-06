@@ -90,7 +90,7 @@ class DeleteRelationshipAction extends Action
 
             $records = $relatedClass::find()->andWhere(['in', $relatedClass::primaryKey(), $ids])->all();
             foreach ($records as $record) {
-                $model->unlink($name, $record);
+                $model->unlink($name, $record, $this->enableResourceDeleting);
             }
         }
     }

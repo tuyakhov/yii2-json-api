@@ -88,7 +88,7 @@ class ResourceModel extends Model implements ResourceInterface, LinksInterface
         return $asArray ? [$this->getId()] : $this->getId();
     }
 
-    public function unlinkAll($name)
+    public function unlinkAll($name, $delete = false)
     {
         $this->$name = null;
     }

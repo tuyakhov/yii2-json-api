@@ -6,6 +6,7 @@
 namespace tuyakhov\jsonapi\actions;
 
 use tuyakhov\jsonapi\ResourceInterface;
+use tuyakhov\jsonapi\ResourceTrait;
 use yii\db\ActiveRecordInterface;
 use yii\db\BaseActiveRecord;
 use yii\helpers\ArrayHelper;
@@ -22,6 +23,11 @@ class Action extends \yii\rest\Action
      * @var bool Weather allow to do a full replacement of a to-many relationship
      */
     public $allowFullReplacement = true;
+
+    /**
+     * @var bool Weather allow to delete the underlying resource if a relationship is deleted (as a garbage collection measure)
+     */
+    public $enableResourceDeleting = false;
 
     /**
      * Links the relationships with primary model.
@@ -59,6 +65,12 @@ class Action extends \yii\rest\Action
                 continue;
             }
             $records = $relatedClass::find()->andWhere(['in', $relatedClass::primaryKey(), $ids])->all();
+
+            /** @see ResourceTrait::$allowDeletingResources */
+            if (property_exists($model, 'allowDeletingResources')) {
+                $model->allowDeletingResources = $this->enableResourceDeleting;
+            }
+
             $model->setResourceRelationship($name, $records);
         }
     }
