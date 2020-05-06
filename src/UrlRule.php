@@ -21,10 +21,12 @@ class UrlRule extends \yii\rest\UrlRule
             '{relationship}' => '<name:\w+>'
         ]));
         $this->patterns = array_merge($this->patterns, [
+            'POST' => 'create',
             'DELETE {id}/relationships/{relationship}' => 'delete-relationship',
             'POST,PATCH {id}/relationships/{relationship}' => 'update-relationship',
-            'GET {id}/{relationship}' => 'view-related',
-            '{id}/{relationship}' => 'options'
+            'HEAD,GET {id}/{relationship}' => 'view-related',
+            '{id}/{relationship}' => 'options',
+            'HEAD,GET {id}/relationships/{relationship}' => 'view-relationship',
         ]);
         parent::init();
     }
