@@ -6,6 +6,7 @@
 namespace tuyakhov\jsonapi\actions;
 
 
+use tuyakhov\jsonapi\Pagination;
 use tuyakhov\jsonapi\ResourceInterface;
 use yii\data\ActiveDataProvider;
 use yii\db\ActiveQuery;
@@ -50,7 +51,10 @@ class ViewRelatedAction extends Action
 
         if ($related->multiple) {
             return new ActiveDataProvider([
-                'query' => $related
+                'query' => $related,
+                'pagination' => [
+                    'class' => Pagination::className(),
+                ],
             ]);
         } else {
             return $related->one();

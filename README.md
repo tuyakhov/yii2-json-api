@@ -168,6 +168,12 @@ As the result:
   }
 }
 ```
+Pagination
+---------------------------
+The `page` query parameter family is reserved for pagination.
+This library implements a page-based strategy and allows the usage of query parameters such as `page[number]` and `page[size]`  
+Example: `http://yourdomain.com/users?page[number]=3&page[size]=10`
+
 Enabling JSON API Input
 ---------------------------
 To let the API accept input data in JSON API format, configure the [[yii\web\Request::$parsers|parsers]] property of the request application component to use the [[tuyakhov\jsonapi\JsonApiParser]] for JSON input
@@ -313,15 +319,8 @@ return [
         'urlManager' => [
             'rules' => [
                 [
-                    'class' => 'yii\rest\UrlRule',
-                    'controller' => 'user',
-                    'extraPatterns' => [
-                        'GET {id}/<name:\w+>' => 'view-related',
-                        'PATCH {id}/relationships/<name:\w+>' => 'update-relationship',
-                        'DELETE {id}/relationships/<name:\w+>' => 'delete-relationship',
-                        '{id}/<name:\w+>' => 'options'
-                    ],
-                    'except' => ['index'],
+                    'class' => 'tuyakhov\jsonapi\UrlRule',
+                    'controller' => ['user'],
                 ],
 
             ]

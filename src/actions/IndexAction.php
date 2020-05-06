@@ -7,6 +7,7 @@ namespace tuyakhov\jsonapi\actions;
 
 
 use tuyakhov\jsonapi\Inflector;
+use tuyakhov\jsonapi\Pagination;
 use yii\data\ActiveDataProvider;
 use yii\data\DataFilter;
 use Yii;
@@ -100,8 +101,7 @@ class IndexAction extends Action
             'class' => ActiveDataProvider::className(),
             'query' => $query,
             'pagination' => [
-                'params' => Yii::$app->getRequest()->getQueryParam('page', []),
-                'pageSizeParam' => 'size'
+                'class' => Pagination::className(),
             ],
             'sort' => [
                 'enableMultiSort' => true

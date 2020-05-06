@@ -7,6 +7,7 @@ namespace tuyakhov\jsonapi\tests\actions;
 
 
 use tuyakhov\jsonapi\actions\IndexAction;
+use tuyakhov\jsonapi\tests\data\ActiveQuery;
 use tuyakhov\jsonapi\tests\data\ResourceModel;
 use tuyakhov\jsonapi\tests\TestCase;
 use yii\base\Controller;
@@ -55,5 +56,39 @@ class IndexActionTest extends TestCase
         $this->assertInstanceOf(ActiveDataProvider::className(), $dataProvider = $action->run());
         $this->assertInstanceOf(Query::className(), $dataProvider->query);
         $this->assertNull($dataProvider->query->where);
+    }
+
+    public function testPagination()
+    {
+        $action = new IndexAction('test', new Controller('test', \Yii::$app), [
+            'modelClass' => ResourceModel::className(),
+        ]);
+        ActiveQuery::$models = [new ResourceModel(), new ResourceModel()];
+        $params = ['page' => 1];
+        \Yii::$app->getRequest()->setQueryParams($params);
+
+        $this->assertInstanceOf(ActiveDataProvider::className(), $dataProvider = $action->run());
+        $this->assertSame(0, $dataProvider->getPagination()->page);
+
+        $params = ['page' => ['number' => 2, 'size' => 1]];
+        \Yii::$app->getRequest()->setQueryParams($params);
+
+        $this->assertInstanceOf(ActiveDataProvider::className(), $dataProvider = $action->run());
+
+        $this->assertSame(2, $dataProvider->getCount());
+        $this->assertSame(2, $dataProvider->pagination->getPageCount());
+        $this->assertSame(1, $dataProvider->pagination->getPageSize());
+        $this->assertSame(1, $dataProvider->pagination->getOffset());
+
+        // test invalid value
+        $params = ['page' => 1];
+        \Yii::$app->getRequest()->setQueryParams($params);
+
+        $this->assertInstanceOf(ActiveDataProvider::className(), $dataProvider = $action->run());
+
+        $this->assertSame(2, $dataProvider->getCount());
+        $this->assertSame(1, $dataProvider->pagination->getPageCount());
+        $this->assertSame($dataProvider->pagination->defaultPageSize, $dataProvider->pagination->getPageSize());
+        $this->assertSame(0, $dataProvider->pagination->getOffset());
     }
 }
