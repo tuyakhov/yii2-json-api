@@ -172,7 +172,7 @@ Pagination
 ---------------------------
 The `page` query parameter family is reserved for pagination.
 This library implements a page-based strategy and allows the usage of query parameters such as `page[number]` and `page[size]`  
-Example: `http://yourdomain.com/users?page[number]=3&page[size]=10`
+Example: `http://yourdomain.com/users?page[page]=3&page[size]=10`
 
 Enabling JSON API Input
 ---------------------------
