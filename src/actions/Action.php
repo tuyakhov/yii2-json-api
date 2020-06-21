@@ -67,8 +67,8 @@ class Action extends \yii\rest\Action
             $records = $relatedClass::find()->andWhere(['in', $relatedClass::primaryKey(), $ids])->all();
 
             /** @see ResourceTrait::$allowDeletingResources */
-            if (property_exists($model, 'allowDeletingResources')) {
-                $model->allowDeletingResources = $this->enableResourceDeleting;
+            if (method_exists($model, 'setAllowDeletingResources')) {
+                $model->setAllowDeletingResources($this->enableResourceDeleting);
             }
 
             $model->setResourceRelationship($name, $records);

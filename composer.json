@@ -24,7 +24,11 @@
   },
   "autoload": {
     "psr-4": {
-      "tuyakhov\\jsonapi\\": "src/",
+      "tuyakhov\\jsonapi\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
       "tuyakhov\\jsonapi\\tests\\": "tests/"
     }
   }

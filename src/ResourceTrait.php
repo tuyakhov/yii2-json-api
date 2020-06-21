@@ -16,7 +16,7 @@ trait ResourceTrait
      * @var bool a flag that enables/disables deleting of the model that contains the foreign key when setting relationships
      * By default the model's foreign key will be set `null` and saved.
      */
-    public $allowDeletingResources = false;
+    protected $allowDeletingResources = false;
 
     /**
      * @return string
@@ -144,5 +144,21 @@ trait ResourceTrait
         }
 
         return $result;
+    }
+
+    /**
+     * @param $value boolean
+     */
+    public function setAllowDeletingResources($value)
+    {
+        $this->allowDeletingResources = $value;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getAllowDeletingResources()
+    {
+        return $this->allowDeletingResources;
     }
 }
