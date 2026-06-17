@@ -123,4 +123,26 @@ class JsonApiResponseFormatterTest extends TestCase
         $formatter->format($response);
         $this->assertNull($response->content);
     }
+
+    public function testFormatClientErrorWithNullData()
+    {
+        $response = new Response();
+        $response->setStatusCode(401);
+        $response->data = null;
+        (new JsonApiResponseFormatter())->format($response);
+        $this->assertJson($response->content);
+        $this->assertSame(['errors' => []], json_decode($response->content, true));
+        $this->assertSame(401, $response->statusCode);
+    }
+
+    public function testFormatServerErrorWithNullData()
+    {
+        $response = new Response();
+        $response->setStatusCode(403);
+        $response->data = null;
+        (new JsonApiResponseFormatter())->format($response);
+        $this->assertJson($response->content);
+        $this->assertSame(['errors' => []], json_decode($response->content, true));
+        $this->assertSame(403, $response->statusCode);
+    }
 }

@@ -75,7 +75,7 @@ class JsonApiResponseFormatter extends Component implements ResponseFormatterInt
                 $response->data = [$response->data];
             }
             $formattedErrors = [];
-            foreach ($response->data as $error) {
+            foreach ((array) $response->data as $error) {
                 $formattedError = array_intersect_key($error, array_flip(static::ERROR_ALLOWED_MEMBERS));
                 foreach (static::ERROR_EXCEPTION_MAPPING as $member => $key) {
                     if (isset($error[$key])) {
