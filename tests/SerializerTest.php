@@ -4,10 +4,28 @@
  */
 namespace tuyakhov\jsonapi\tests;
 
+use tuyakhov\jsonapi\ResourceIdentifierInterface;
 use tuyakhov\jsonapi\tests\data\ResourceModel;
 use tuyakhov\jsonapi\Serializer;
 use yii\base\InvalidValueException;
 use yii\data\ArrayDataProvider;
+
+class ResourceModelIdentifier implements ResourceIdentifierInterface {
+    private $_id;
+    private $_type;
+
+    public function __construct($id, $type) {
+        $this->_id = $id;
+        $this->_type = $type;
+    }
+    public function getId() {
+        return $this->_id;
+    }
+
+    public function getType() {
+        return $this->_type;
+    }
+}
 
 class SerializerTest extends TestCase
 {
@@ -53,6 +71,145 @@ class SerializerTest extends TestCase
                 'status' => '422'
             ]
         ], $serializer->serialize($model));
+    }
+
+    public function testSerializeModelDataAddingNoDataValuesIfNotSpecified()
+    {
+        $serializer = new Serializer();
+        ResourceModel::$id = 123;
+        $model = new ResourceModel();
+        $this->assertSame([
+            'data' => [
+                'id' => '123',
+                'type' => 'resource-models',
+                'attributes' => [
+                    'field1' => 'test',
+                    'field2' => 2,
+                ],
+                'links' => [
+                    'self' => ['href' => 'http://example.com/resource/123']
+                ]
+            ]
+        ], $serializer->serialize($model));
+
+        ResourceModel::$fields = ['first_name'];
+        ResourceModel::$extraFields = ['extraField1'];
+        $model->extraField1 = new ResourceModel();
+        $relationship = [
+            'links' => [
+                'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field1'],
+                'related' => ['href' => 'http://example.com/resource/123/extra-field1'],
+            ]
+        ];
+        $resource = [
+            'id' => '123',
+            'type' => 'resource-models',
+            'attributes' => [
+                'first-name' => 'Bob',
+            ],
+            'relationships' => [
+                'extra-field1' => [
+                    'links' => $relationship['links']
+                ]
+            ],
+            'links' => [
+                'self' => ['href' => 'http://example.com/resource/123']
+            ]
+        ];
+        $expected = [
+            'data' => $resource
+        ];
+        $expected['data']['relationships']['extra-field1'] = $relationship;
+        $this->assertSame($expected, $serializer->serialize($model));
+    }
+
+    public function testSerializeModelDataAddDataValuesIfOptIn()
+    {
+        $serializer = new Serializer();
+        ResourceModel::$id = 123;
+        $model = new ResourceModel();
+        $this->assertSame([
+            'data' => [
+                'id' => '123',
+                'type' => 'resource-models',
+                'attributes' => [
+                    'field1' => 'test',
+                    'field2' => 2,
+                ],
+                'links' => [
+                    'self' => ['href' => 'http://example.com/resource/123']
+                ]
+            ]
+        ], $serializer->serialize($model));
+
+        ResourceModel::$fields = ['first_name'];
+        ResourceModel::$extraFields = [
+            'extraField1' => function() { return new ResourceModel(); },
+        ];
+
+        $model->extraField1 = function() { return new ResourceModel(); };
+        $relationship = [
+            'links' => [
+                'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field1'],
+                'related' => ['href' => 'http://example.com/resource/123/extra-field1'],
+            ]
+        ];
+        $resource = [
+            'id' => '123',
+            'type' => 'resource-models',
+            'attributes' => [
+                'first-name' => 'Bob',
+            ],
+            'relationships' => [
+                'extra-field1' => [
+                    'links' => $relationship['links']
+                ]
+            ],
+            'links' => [
+                'self' => ['href' => 'http://example.com/resource/123']
+            ]
+        ];
+        $expected = [
+            'data' => $resource
+        ];
+        $expected['data']['relationships']['extra-field1'] = $relationship;
+        $this->assertSame($expected, $serializer->serialize($model));
+
+        ResourceModel::$extraFields = [
+            'extraField1' => function() {
+                return [
+                    'resource' => new ResourceModel(),
+                    'data' => new ResourceModelIdentifier( "123",'resource-models'),
+                ];
+            }
+        ];
+        $relationship = [
+            'data' => ['id' => '123', 'type' => 'resource-models'],
+            'links' => [
+                'self' => ['href' => 'http://example.com/resource/123/relationships/extra-field1'],
+                'related' => ['href' => 'http://example.com/resource/123/extra-field1'],
+            ]
+        ];
+        $resource = [
+            'id' => '123',
+            'type' => 'resource-models',
+            'attributes' => [
+                'first-name' => 'Bob',
+            ],
+            'relationships' => [
+                'extra-field1' => [
+                    'links' => $relationship['links']
+                ]
+            ],
+            'links' => [
+                'self' => ['href' => 'http://example.com/resource/123']
+            ]
+        ];
+        $expected = [
+            'data' => $resource
+        ];
+        $expected['data']['relationships']['extra-field1'] = $relationship;
+        $this->assertSame($expected, $serializer->serialize($model));
     }
 
     public function testSerializeModelData()
@@ -107,6 +264,11 @@ class SerializerTest extends TestCase
         \Yii::$app->request->setQueryParams(['include' => 'extra-field1']);
         $expected['included'][] = $resource;
         $expected['data']['relationships']['extra-field1'] = $relationship;
+        $this->assertSame($expected, $serializer->serialize($model));
+
+        $model->extraField1 = [
+            'resource' => new ResourceModel(),
+        ];
         $this->assertSame($expected, $serializer->serialize($model));
     }
 
